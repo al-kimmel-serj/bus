@@ -1,7 +1,7 @@
 package stub_publishers_registry
 
 import (
-	"github.com/al-kimmel-serj/zmq-bus"
+	"github.com/al-kimmel-serj/bus"
 )
 
 type Client struct {

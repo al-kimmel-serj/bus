@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"sync"
 
-	"github.com/al-kimmel-serj/zmq-bus"
+	"github.com/al-kimmel-serj/bus"
 	"github.com/pebbe/zmq4"
 	"google.golang.org/protobuf/proto"
 )

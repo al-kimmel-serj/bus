@@ -1,4 +1,4 @@
-module github.com/al-kimmel-serj/zmq-bus
+module github.com/al-kimmel-serj/bus
 
 go 1.19
 
