@@ -19,14 +19,13 @@ type Subscriber[Payload proto.Message] struct {
 func New[Payload proto.Message](
 	host string,
 	port int,
-	bindAddr string,
 	eventName bus.EventName,
 	eventVersion bus.EventVersion,
 	publishersRegistry bus.PublishersRegistry,
 ) (*Subscriber[Payload], error) {
 	zmqContext, _ := zmq4.NewContext()
 	zmqSocket, _ := zmqContext.NewSocket(zmq4.PUB)
-	err := zmqSocket.Bind(bindAddr)
+	err := zmqSocket.Bind(fmt.Sprintf("tcp://*:%d", port))
 	if err != nil {
 		return nil, fmt.Errorf("zmq4.Socket.Bind error: %w", err)
 	}
