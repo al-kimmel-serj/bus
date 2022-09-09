@@ -17,10 +17,14 @@ var (
 	serviceIDForbiddenCharsRegEx = regexp.MustCompile("[^0-9A-Za-z-]+")
 )
 
-type Client struct{}
+type Client struct {
+	errorHandler func(error)
+}
 
-func New() *Client {
-	return &Client{}
+func New(errorHandler func(error)) *Client {
+	return &Client{
+		errorHandler: errorHandler,
+	}
 }
 
 func (c *Client) Register(eventName bus.EventName, eventVersion bus.EventVersion, host string, port int) (func() error, error) {
@@ -85,7 +89,7 @@ func (c *Client) Watch(eventName bus.EventName, eventVersion bus.EventVersion, h
 		consulConfig := api.DefaultConfig()
 		err = plan.Run(consulConfig.Address)
 		if err != nil {
-			// @todo handle error
+			c.handleError(err)
 		}
 	}()
 
@@ -97,4 +101,10 @@ func (c *Client) Watch(eventName bus.EventName, eventVersion bus.EventVersion, h
 
 func (c *Client) generateServiceID(host string, port int) string {
 	return serviceIDForbiddenCharsRegEx.ReplaceAllString(fmt.Sprintf("bus-%s-%d", host, port), "-")
+}
+
+func (c *Client) handleError(err error) {
+	if c.errorHandler != nil {
+		c.errorHandler(err)
+	}
 }

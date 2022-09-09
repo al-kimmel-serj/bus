@@ -10,6 +10,7 @@ import (
 )
 
 type Subscriber[Payload proto.Message] struct {
+	errorHandler       func(error)
 	payloadChan        chan Payload
 	payloadFactory     func() Payload
 	publishers         map[bus.PublisherEndpoint]struct{}
@@ -25,8 +26,10 @@ func New[Payload proto.Message](
 	eventVersion bus.EventVersion,
 	publishersRegistryWatcher bus.PublishersRegistry,
 	payloadFactory func() Payload,
+	errorHandler func(error),
 ) (*Subscriber[Payload], error) {
 	s := &Subscriber[Payload]{
+		errorHandler:       errorHandler,
 		payloadChan:        make(chan Payload),
 		payloadFactory:     payloadFactory,
 		publishers:         make(map[bus.PublisherEndpoint]struct{}),
@@ -125,7 +128,7 @@ func (s *Subscriber[Payload]) reader() {
 			if err == zmq4.ETERM {
 				return
 			}
-			// @todo handle error
+			s.handleError(err)
 			continue
 		}
 
@@ -137,7 +140,7 @@ func (s *Subscriber[Payload]) reader() {
 
 		err = proto.Unmarshal(payloadBytes, payload)
 		if err != nil {
-			// @todo handle error
+			s.handleError(err)
 			continue
 		}
 
@@ -176,7 +179,7 @@ func (s *Subscriber[Payload]) updatePublishers(endpoints []bus.PublisherEndpoint
 	for _, endpoint := range endpointsForOpen {
 		err := s.zmqSocket.Connect(string(endpoint))
 		if err != nil {
-			// @todo handle error
+			s.handleError(err)
 		}
 		s.publishers[endpoint] = struct{}{}
 	}
@@ -184,8 +187,14 @@ func (s *Subscriber[Payload]) updatePublishers(endpoints []bus.PublisherEndpoint
 	for _, endpoint := range endpointsForClose {
 		err := s.zmqSocket.Disconnect(string(endpoint))
 		if err != nil {
-			// @todo handle error
+			s.handleError(err)
 		}
 		delete(s.publishers, endpoint)
+	}
+}
+
+func (s *Subscriber[Payload]) handleError(err error) {
+	if s.errorHandler != nil {
+		s.errorHandler(err)
 	}
 }
