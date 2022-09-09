@@ -2,6 +2,7 @@ package zmq_subscriber
 
 import (
 	"bytes"
+	"fmt"
 	"sync"
 
 	"github.com/al-kimmel-serj/bus"
@@ -17,6 +18,7 @@ type Subscriber[Payload proto.Message] struct {
 	publishersMx       sync.Mutex
 	readerShutdownChan chan struct{}
 	stopWatcher        func() error
+	topicPrefix        string
 	zmqContext         *zmq4.Context
 	zmqSocket          *zmq4.Socket
 }
@@ -34,6 +36,7 @@ func New[Payload proto.Message](
 		payloadFactory:     payloadFactory,
 		publishers:         make(map[bus.PublisherEndpoint]struct{}),
 		readerShutdownChan: make(chan struct{}),
+		topicPrefix:        fmt.Sprintf("%s:v%d:", eventName, eventVersion),
 	}
 
 	var err error
@@ -77,11 +80,11 @@ func (s *Subscriber[Payload]) Stop() error {
 }
 
 func (s *Subscriber[Payload]) Subscribe(eventFilter bus.EventFilter) error {
-	return s.zmqSocket.SetSubscribe(string(eventFilter))
+	return s.zmqSocket.SetSubscribe(fmt.Sprintf("%s%s", s.topicPrefix, eventFilter))
 }
 
 func (s *Subscriber[Payload]) Unsubscribe(eventFilter bus.EventFilter) error {
-	return s.zmqSocket.SetUnsubscribe(string(eventFilter))
+	return s.zmqSocket.SetUnsubscribe(fmt.Sprintf("%s%s", s.topicPrefix, eventFilter))
 }
 
 func (s *Subscriber[Payload]) publishersDiff(

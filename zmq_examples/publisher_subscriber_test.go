@@ -44,7 +44,7 @@ func Example() {
 
 	time.Sleep(100 * time.Millisecond)
 
-	err = subscriber.Subscribe("")
+	err = subscriber.Subscribe("gopher")
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,7 @@ func Example() {
 		Message: "Hello, Gopher.",
 	}
 
-	err = publisher.Publish("", &sentHello)
+	err = publisher.Publish("gopher", &sentHello)
 	if err != nil {
 		panic(err)
 	}
