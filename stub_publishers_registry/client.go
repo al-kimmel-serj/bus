@@ -15,7 +15,7 @@ func (c *Client) Register(_ bus.EventName, _ bus.EventVersion, _ string, _ int) 
 }
 
 func (c *Client) Watch(_ bus.EventName, _ bus.EventVersion, handler func([]bus.PublisherEndpoint)) (func() error, error) {
-	go handler(c.endpoints)
+	handler(c.endpoints)
 	return func() error {
 		return nil
 	}, nil

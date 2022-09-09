@@ -160,7 +160,12 @@ func (s *Subscriber[Payload]) stopReader() error {
 		}
 	}
 
-	err := s.zmqContext.Term()
+	err := s.zmqSocket.Close()
+	if err != nil {
+		return err
+	}
+
+	err = s.zmqContext.Term()
 	if err != nil {
 		return err
 	}
