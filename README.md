@@ -4,7 +4,7 @@ This library supports service discovery and Protocol Buffers marshaling/unmarsha
 
 ## Requirements
 
-* ZeroMQ
+* [ZeroMQ C headers and shared library](https://zeromq.org/download/?language=c&library=libzmq#).
 
 ## Usage examples
 
