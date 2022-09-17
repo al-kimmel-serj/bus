@@ -2,6 +2,10 @@
 
 This library supports service discovery and Protocol Buffers marshaling/unmarshaling.
 
+## Requirements
+
+* ZeroMQ
+
 ## Usage examples
 
 * [ZeroMQ pub/sub example](zmq_examples/publisher_subscriber_test.go)
