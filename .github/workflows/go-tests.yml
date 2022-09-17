@@ -1,4 +1,4 @@
-name: Event bus library
+name: Golang tests
 
 on:
   push:

@@ -1,4 +1,5 @@
 # Event bus library
+![workflow status](https://github.com/al-kimmel-serj/bus/actions/workflows/go-tests.yml/badge.svg)
 
 This library supports service discovery and Protocol Buffers marshaling/unmarshaling.
 
