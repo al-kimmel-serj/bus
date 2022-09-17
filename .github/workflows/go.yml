@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install libzmq
+      - name: Install ZeroMQ library
         run: sudo apt-get install -y libzmq3-dev
 
       - name: Set up Go
