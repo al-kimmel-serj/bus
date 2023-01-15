@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type Subscriber[Payload proto.Message] struct {
+type Publisher[Payload proto.Message] struct {
 	topicPrefix []byte
 	unregister  func() error
 	zmqContext  *zmq4.Context
@@ -22,7 +22,7 @@ func New[Payload proto.Message](
 	eventName bus.EventName,
 	eventVersion bus.EventVersion,
 	publishersRegistry bus.PublishersRegistry,
-) (*Subscriber[Payload], error) {
+) (*Publisher[Payload], error) {
 	zmqContext, _ := zmq4.NewContext()
 	zmqSocket, _ := zmqContext.NewSocket(zmq4.PUB)
 	err := zmqSocket.Bind(fmt.Sprintf("tcp://*:%d", port))
@@ -38,7 +38,7 @@ func New[Payload proto.Message](
 		return nil, fmt.Errorf("PublishersRegistry.Register error: %w", err)
 	}
 
-	return &Subscriber[Payload]{
+	return &Publisher[Payload]{
 		topicPrefix: topicPrefix,
 		unregister:  unregister,
 		zmqContext:  zmqContext,
@@ -46,7 +46,7 @@ func New[Payload proto.Message](
 	}, nil
 }
 
-func (p *Subscriber[Payload]) Publish(eventFilter bus.EventFilter, eventPayload Payload) error {
+func (p *Publisher[Payload]) Publish(eventFilter bus.EventFilter, eventPayload Payload) error {
 	buf := bytes.NewBuffer(p.topicPrefix)
 
 	if len(eventFilter) > 0 {
@@ -72,7 +72,7 @@ func (p *Subscriber[Payload]) Publish(eventFilter bus.EventFilter, eventPayload 
 	return nil
 }
 
-func (p *Subscriber[Payload]) Stop() error {
+func (p *Publisher[Payload]) Stop() error {
 	err := p.unregister()
 	if err != nil {
 		return fmt.Errorf("unregister error: %w", err)
