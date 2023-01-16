@@ -11,8 +11,11 @@ import (
 )
 
 type Subscriber[Payload proto.Message] struct {
-	errorHandler       func(error)
-	payloadChan        chan Payload
+	errorHandler func(error)
+	eventsChan   chan struct {
+		EventFilter bus.EventFilter
+		Payload     Payload
+	}
 	payloadFactory     func() Payload
 	publishers         map[bus.PublisherEndpoint]struct{}
 	publishersMx       sync.Mutex
@@ -31,12 +34,15 @@ func New[Payload proto.Message](
 	errorHandler func(error),
 ) (*Subscriber[Payload], error) {
 	s := &Subscriber[Payload]{
-		errorHandler:       errorHandler,
-		payloadChan:        make(chan Payload),
+		errorHandler: errorHandler,
+		eventsChan: make(chan struct {
+			EventFilter bus.EventFilter
+			Payload     Payload
+		}),
 		payloadFactory:     payloadFactory,
 		publishers:         make(map[bus.PublisherEndpoint]struct{}),
 		readerShutdownChan: make(chan struct{}),
-		topicPrefix:        fmt.Sprintf("%s:v%d:", eventName, eventVersion),
+		topicPrefix:        fmt.Sprintf(bus.TopicPrefixFormat, eventName, eventVersion),
 	}
 
 	var err error
@@ -61,8 +67,11 @@ func New[Payload proto.Message](
 	return s, nil
 }
 
-func (s *Subscriber[Payload]) PayloadChan() <-chan Payload {
-	return s.payloadChan
+func (s *Subscriber[Payload]) EventsChan() <-chan struct {
+	EventFilter bus.EventFilter
+	Payload     Payload
+} {
+	return s.eventsChan
 }
 
 func (s *Subscriber[Payload]) Stop() error {
@@ -117,7 +126,7 @@ func (s *Subscriber[Payload]) publishersDiff(
 
 func (s *Subscriber[Payload]) reader() {
 	defer func() {
-		close(s.payloadChan)
+		close(s.eventsChan)
 	}()
 
 	var (
@@ -135,9 +144,13 @@ func (s *Subscriber[Payload]) reader() {
 			continue
 		}
 
-		delimiterIndex := bytes.IndexByte(msgBytes, bus.TopicAndPayloadDelimiter)
+		topicAndPayloadDelimiterIndex := bytes.IndexByte(msgBytes, bus.TopicAndPayloadDelimiter)
 
-		payloadBytes := msgBytes[delimiterIndex+1:]
+		topicBytes := msgBytes[0:topicAndPayloadDelimiterIndex]
+		topicPrefixAndEventFilterDelimiterIndex := bytes.LastIndexByte(topicBytes, bus.TopicPrefixAndEventFilterDelimiter)
+		eventFilter := bus.EventFilter(topicBytes[topicPrefixAndEventFilterDelimiterIndex+1:])
+
+		payloadBytes := msgBytes[topicAndPayloadDelimiterIndex+1:]
 
 		payload := s.payloadFactory()
 
@@ -148,7 +161,13 @@ func (s *Subscriber[Payload]) reader() {
 		}
 
 		select {
-		case s.payloadChan <- payload:
+		case s.eventsChan <- struct {
+			EventFilter bus.EventFilter
+			Payload     Payload
+		}{
+			EventFilter: eventFilter,
+			Payload:     payload,
+		}:
 		case <-s.readerShutdownChan:
 			return
 		}

@@ -30,7 +30,7 @@ func New[Payload proto.Message](
 		return nil, fmt.Errorf("zmq4.Socket.Bind error: %w", err)
 	}
 
-	topicPrefix := []byte(fmt.Sprintf("%s:v%d:", eventName, eventVersion))
+	topicPrefix := []byte(fmt.Sprintf(bus.TopicPrefixFormat, eventName, eventVersion))
 
 	unregister, err := publishersRegistry.Register(eventName, eventVersion, host, port)
 	if err != nil {

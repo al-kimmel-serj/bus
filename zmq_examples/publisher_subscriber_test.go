@@ -60,8 +60,9 @@ func Example() {
 		panic(err)
 	}
 
-	acceptedHello := <-subscriber.PayloadChan()
-	fmt.Println(acceptedHello.Message)
+	acceptedHello := <-subscriber.EventsChan()
+	fmt.Println(acceptedHello.EventFilter)
+	fmt.Println(acceptedHello.Payload.Message)
 
 	err = subscriber.Stop()
 	if err != nil {
@@ -73,5 +74,6 @@ func Example() {
 		panic(err)
 	}
 
-	// Output: Hello, Gopher.
+	// Output: gopher
+	//Hello, Gopher.
 }

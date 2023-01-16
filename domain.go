@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	TopicAndPayloadDelimiter byte = 0
+	TopicAndPayloadDelimiter           byte = 0
+	TopicPrefixAndEventFilterDelimiter byte = ':'
+	TopicPrefixFormat                       = "%s:v%d" + string(TopicPrefixAndEventFilterDelimiter)
 )
 
 type (
@@ -26,7 +28,10 @@ type PublishersRegistry interface {
 }
 
 type Subscriber[Payload proto.Message] interface {
-	PayloadChan() <-chan Payload
+	EventsChan() <-chan struct {
+		EventFilter EventFilter
+		Payload     Payload
+	}
 	Stop() error
 	Subscribe(eventFilter EventFilter) error
 	Unsubscribe(eventFilter EventFilter) error
