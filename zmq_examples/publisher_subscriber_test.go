@@ -61,7 +61,7 @@ func Example() {
 	}
 
 	acceptedHello := <-subscriber.EventsChan()
-	fmt.Println(acceptedHello.EventFilter)
+	fmt.Println(acceptedHello.EventKey)
 	fmt.Println(acceptedHello.Payload.Message)
 
 	err = subscriber.Stop()

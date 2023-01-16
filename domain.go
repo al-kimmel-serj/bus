@@ -5,20 +5,21 @@ import (
 )
 
 const (
-	TopicAndPayloadDelimiter           byte = 0
-	TopicPrefixAndEventFilterDelimiter byte = ':'
-	TopicPrefixFormat                       = "%s:v%d" + string(TopicPrefixAndEventFilterDelimiter)
+	TopicAndPayloadDelimiter        byte = 0
+	TopicPrefixAndEventKeyDelimiter byte = ':'
+	TopicPrefixFormat                    = "%s:v%d" + string(TopicPrefixAndEventKeyDelimiter)
 )
 
 type (
 	EventFilter       string
+	EventKey          string
 	EventName         string
 	EventVersion      int
 	PublisherEndpoint string
 )
 
 type Publisher[Payload proto.Message] interface {
-	Publish(eventFilter EventFilter, eventPayload Payload) error
+	Publish(eventKey EventKey, eventPayload Payload) error
 	Stop() error
 }
 
@@ -29,8 +30,8 @@ type PublishersRegistry interface {
 
 type Subscriber[Payload proto.Message] interface {
 	EventsChan() <-chan struct {
-		EventFilter EventFilter
-		Payload     Payload
+		EventKey EventKey
+		Payload  Payload
 	}
 	Stop() error
 	Subscribe(eventFilter EventFilter) error

@@ -46,11 +46,11 @@ func New[Payload proto.Message](
 	}, nil
 }
 
-func (p *Publisher[Payload]) Publish(eventFilter bus.EventFilter, eventPayload Payload) error {
+func (p *Publisher[Payload]) Publish(eventKey bus.EventKey, eventPayload Payload) error {
 	buf := bytes.NewBuffer(p.topicPrefix)
 
-	if len(eventFilter) > 0 {
-		buf.WriteString(string(eventFilter))
+	if len(eventKey) > 0 {
+		buf.WriteString(string(eventKey))
 	}
 	buf.WriteByte(bus.TopicAndPayloadDelimiter)
 
