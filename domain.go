@@ -6,7 +6,7 @@ import (
 
 const (
 	TopicAndPayloadDelimiter        byte = 0
-	TopicPrefixAndEventKeyDelimiter byte = ':'
+	TopicPrefixAndEventKeyDelimiter byte = 1
 	TopicPrefixFormat                    = "%s:v%d" + string(TopicPrefixAndEventKeyDelimiter)
 )
 

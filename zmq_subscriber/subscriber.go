@@ -147,7 +147,7 @@ func (s *Subscriber[Payload]) reader() {
 		topicAndPayloadDelimiterIndex := bytes.IndexByte(msgBytes, bus.TopicAndPayloadDelimiter)
 
 		topicBytes := msgBytes[0:topicAndPayloadDelimiterIndex]
-		topicPrefixAndEventKeyDelimiterIndex := bytes.LastIndexByte(topicBytes, bus.TopicPrefixAndEventKeyDelimiter)
+		topicPrefixAndEventKeyDelimiterIndex := bytes.IndexByte(topicBytes, bus.TopicPrefixAndEventKeyDelimiter)
 		eventKey := bus.EventKey(topicBytes[topicPrefixAndEventKeyDelimiterIndex+1:])
 
 		payloadBytes := msgBytes[topicAndPayloadDelimiterIndex+1:]
